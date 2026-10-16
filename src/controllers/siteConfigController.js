@@ -1,9 +1,10 @@
 // Public site configuration. All values live in the server's .env (never in a
 // client bundle) and are delivered to the frontend at runtime via
 // GET /api/site-config. Only intentionally-public details are exposed here.
-// Requiring the env loader here keeps this controller correct even when another
-// entry point (a test, a script) builds the app without going through server.js.
-const { envString: readValue } = require("../config/env");
+const readValue = (name, fallback = "") => {
+  const value = process.env[name];
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+};
 
 const getSiteConfig = (_req, res) => {
   res.json({

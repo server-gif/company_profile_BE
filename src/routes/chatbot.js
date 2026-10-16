@@ -2,26 +2,14 @@ const express = require("express");
 const router = express.Router();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const companyInfo = require("../constants/companyInfo");
-const { envString } = require("../config/env");
 
-// Built per request: creating the client while this file was being imported
-// crashed the whole API at boot whenever GEMINI_API_KEY had not been loaded
-// yet, and shipped the model name as a hard-coded string.
-const createGenerativeModel = () => {
-  const apiKey = envString("GEMINI_API_KEY");
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set in the backend .env");
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({
-    model: envString("GEMINI_MODEL", "gemini-3.5-flash-lite"),
-  });
-};
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    const model = createGenerativeModel();
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
     const prompt = `
 You are the official AI assistant for Prime Softech, a creative and reliable technology company based in Surat, India. Your sole purpose is to assist website visitors by providing accurate and concise answers about Prime Softech's services, expertise, and contact methods using only the verified company information provided.
@@ -31,10 +19,7 @@ You are the official AI assistant for Prime Softech, a creative and reliable tec
 - Avoid corporate jargon; keep language clear and conversational.
 
 - Answer strictly based on the provided company information; do not fabricate details or mention unverified services, portfolios, or pricing.
-- If asked about pricing or quotes, state that pricing depends on project requirements and invite the user to reach out via the website contact form, email (${envString(
-      "CAREERS_EMAIL",
-      "hr@primesoftechs.com",
-    )}), or phone (${envString("CONTACT_MOBILE", "+91 70647 02015")}).
+- If asked about pricing or quotes, state that pricing depends on project requirements and invite the user to reach out via the website contact form, email (${process.env.CAREERS_EMAIL}), or phone (${process.env.CONTACT_MOBILE}).
 - For questions unrelated to Prime Softech (like general tech advice, coding help, or queries about other companies), politely redirect: "I'm here to help with questions about Prime Softech's services. For that, I'd recommend [relevant suggestion]."
 - If the user wants to start a project or consultation, encourage them to use the website contact form or reach out directly via phone or email.
 - Always keep responses aligned with Prime Softech's core values: reliability, creativity, and strong communication.
@@ -52,7 +37,7 @@ You are the official AI assistant for Prime Softech, a creative and reliable tec
 - Never speculate, invent, or promise details not present in the official company information. If uncertain, steer the conversation toward verified topics or suggest contacting the team directly for specifics.
 
 Company Information:
-${companyInfo()}
+${companyInfo}
 
 User's Question: ${message}
 `;

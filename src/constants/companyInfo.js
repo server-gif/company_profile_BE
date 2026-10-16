@@ -1,13 +1,4 @@
-// Knowledge base for the chatbot. Built on demand (not at import time) so the
-// values always come from the environment that was loaded during boot —
-// a module-level template literal used to freeze "undefined" whenever dotenv
-// had not run yet.
-const { envString } = require("../config/env");
-
-const DEFAULT_OFFICE_ADDRESS =
-  "TFC - The Future Corner, Near 300 Feet Ring Road Touch, Gadhpur, Chowk, Sarthana Jakat Naka - Kamrej Rd, Pasodara, Surat, Gujarat 395013";
-
-const companyInfo = () => `
+const companyInfo = `
 Company Name: Prime Softech
 
 About Us:
@@ -35,9 +26,9 @@ Why Choose Us:
 - Clear Communication: Simple, concise advice with active listening
 
 Contact Information:
-- Address: ${envString("OFFICE_ADDRESS", DEFAULT_OFFICE_ADDRESS)}
-- Email: ${envString("CAREERS_EMAIL", envString("CONTACT_EMAIL", "info@primesoftechs.com"))}
-- Phone: ${envString("CONTACT_MOBILE", "+91 70647 02015")}
+- Address: TFC - The Future Corner, Near 300 Feet Ring Road Touch, Gadhpur, Chowk, Sarthana Jakat Naka - Kamrej Rd, Pasodara, Surat, Gujarat 395013
+- Email: ${process.env.CAREERS_EMAIL}
+- Phone: ${process.env.CONTACT_MOBILE}
 
 Company Tagline: We are creative people building exceptional digital experiences.
 `;

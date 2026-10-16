@@ -1,5 +1,4 @@
-// Must stay on line 1: every module below reads process.env while importing.
-require("./config/env");
+require("dotenv").config();
 
 const createApp = require("./app");
 const connectDatabase = require("./config/database");
