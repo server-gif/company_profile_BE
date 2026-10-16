@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const createApp = require("../src/app");
-const contactService = require("../src/services/contactService");
+const Contact = require("../src/models/Contact");
 
 async function withServer(run) {
   const server = createApp().listen(0);
@@ -16,9 +16,9 @@ async function withServer(run) {
 }
 
 test("POST /api/contacts validates and stores a project brief", async () => {
-  const originalCreate = contactService.create;
+  const originalCreate = Contact.create;
   let storedData;
-  contactService.create = async (data) => {
+  Contact.create = async (data) => {
     storedData = data;
     return { id: "contact-123", createdAt: new Date("2026-08-05T00:00:00.000Z") };
   };
@@ -34,7 +34,7 @@ test("POST /api/contacts validates and stores a project brief", async () => {
           phone: "+919876543210",
           company: "Analytical Engines",
           service: "Web development",
-          budget: "Not decided",
+          budget: "Under $10k",
           message: "We need a new company website.",
         }),
       });
@@ -46,7 +46,7 @@ test("POST /api/contacts validates and stores a project brief", async () => {
       assert.equal(storedData.email, "ada@example.com");
     });
   } finally {
-    contactService.create = originalCreate;
+    Contact.create = originalCreate;
   }
 });
 

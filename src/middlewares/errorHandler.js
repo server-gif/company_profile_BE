@@ -1,4 +1,13 @@
 function errorHandler(error, _req, res, _next) {
+  // Raised by the CORS middleware when the caller's origin is missing from
+  // CLIENT_ORIGIN. Report it as a policy rejection, not a server crash.
+  if (error?.message?.includes("not allowed by CORS")) {
+    console.warn(error.message);
+    return res.status(403).json({
+      success: false,
+      message: "This origin is not allowed to call the API.",
+    });
+  }
   if (error?.code === 11000 && error?.keyPattern?.slug)
     return res.status(409).json({
       success: false,

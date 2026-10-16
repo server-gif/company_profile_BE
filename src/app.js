@@ -1,3 +1,7 @@
+// Loads company_profile_BE/.env from this project's own folder before any
+// module below reads process.env at import time (chatbot, R2, site config).
+require("./config/env");
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -15,20 +19,40 @@ const homeStatRoutes = require("./routes/homeStatRoutes");
 const aboutGalleryRoutes = require("./routes/aboutGalleryRoutes");
 const siteConfigRoutes = require("./routes/siteConfigRoutes");
 
+// Comma-separated public origins allowed to call this API (FE + Admin).
+// Set it in the backend .env for local work and in the host's project
+// environment for the deployed apps.
+const buildAllowedOrigins = () =>
+  String(process.env.CLIENT_ORIGIN || "")
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+// Local dev ports are always accepted so the public site (5173) and the admin
+// app (5175) work on any machine without editing .env.
+const isDevOrigin = (origin) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(origin);
+
 function createApp() {
   const app = express();
-  const allowedOrigins = (
-    process.env.CLIENT_ORIGIN ||
-    "http://localhost:5173" ||
-    "https://company-profile-be.vercel.app/api"
-  )
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const allowedOrigins = buildAllowedOrigins();
 
   app.set("trust proxy", 1);
   app.use(helmet());
-  app.use(cors({ origin: "*" }));
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // No Origin header = same-origin, curl, mobile app or server-to-server.
+        if (!origin || isDevOrigin(origin) || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(
+          new Error(`Origin ${origin} is not allowed by CORS (CLIENT_ORIGIN)`),
+        );
+      },
+      credentials: true,
+    }),
+  );
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 

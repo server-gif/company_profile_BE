@@ -1,4 +1,7 @@
 const { S3Client } = require("@aws-sdk/client-s3");
+// Loads .env from this project's folder, so a missing/partial R2 configuration
+// is reported by the message below instead of an empty bucket name.
+require("./env");
 
 function getR2Config() {
   const required = [

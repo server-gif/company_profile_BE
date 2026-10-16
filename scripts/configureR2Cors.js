@@ -1,4 +1,5 @@
-require("dotenv").config();
+// Resolves company_profile_BE/.env from this project's own folder (cwd-safe).
+require("../src/config/env");
 const { PutBucketCorsCommand } = require("@aws-sdk/client-s3");
 const { createR2Client, getR2Config } = require("../src/config/r2");
 
@@ -6,6 +7,7 @@ async function configureR2Cors() {
   const { bucket } = getR2Config();
   const origins = [
     "http://localhost:5173",
+    "http://localhost:5175",
     ...String(process.env.CLIENT_ORIGIN || "").split(","),
   ]
     .map((origin) => origin.trim().replace(/\/$/, ""))
